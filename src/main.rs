@@ -64,7 +64,7 @@ fn main() {
     };
 
     let pairs = loop {
-        let pairs: Vec<(String, String)> = (0..=128)
+        let pairs: Vec<(String, String)> = (0..=4096)
             .into_par_iter()
             .filter_map(|_| {
                 let keypair = genpair();
