@@ -1,6 +1,6 @@
 # vanity-rage
 
-A mildly more performant Rust reimplementation of [vanity-rage](https://github.com/6e6f61/vanity-age).
+A mildly more performant Rust reimplementation of [vanity-age](https://github.com/6e6f61/vanity-age).
 
 
 # Installation
