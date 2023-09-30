@@ -15,6 +15,7 @@
 */
 
 use age::{self, secrecy::ExposeSecret, Identity, Recipient};
+use chrono::{prelude::{DateTime, Local}, SecondsFormat};
 use glob_match::glob_match;
 use rayon::prelude::*;
 use std::{env, process};
@@ -79,5 +80,8 @@ fn main() {
         }
     };
 
-    println!("{:#?}", pairs);
+    let (key_priv, key_pub) = pairs.first().unwrap();
+    let timestamp: DateTime<Local> = std::time::SystemTime::now().into();
+    let timestamp = timestamp.to_rfc3339_opts(SecondsFormat::Secs, false);
+    println!("# created: {}\n# public key: {key_pub}\n{key_priv}", timestamp);
 }
