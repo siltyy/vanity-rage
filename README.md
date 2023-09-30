@@ -3,7 +3,7 @@
 A mildly more performant Rust reimplementation of [vanity-age](https://github.com/6e6f61/vanity-age).
 
 
-# Installation
+## Installation
 
 ```sh
 git clone https://git.tebibyte.media/silt/vanity-rage.git
@@ -13,6 +13,6 @@ target/release/vanity-rage query
 ```
 
 
-# Query Syntax
+## Query Syntax
 
 A query is just a normal glob, nothing to see here. Take a look at [glob-match](https://github.com/devongovett/glob-match)'s README for more info.
