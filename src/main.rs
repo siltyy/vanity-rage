@@ -14,8 +14,11 @@
   If not, see <https://www.gnu.org/licenses/>.
 */
 
-use age::{self, secrecy::ExposeSecret, Identity, Recipient};
-use chrono::{prelude::{DateTime, Local}, SecondsFormat};
+use age::{self, secrecy::ExposeSecret};
+use chrono::{
+    prelude::{DateTime, Local},
+    SecondsFormat,
+};
 use glob_match::glob_match;
 use rayon::prelude::*;
 use std::{env, process};
@@ -31,16 +34,6 @@ fn genpair() -> (String, String) {
 
 fn try_pattern(pattern: String, key_pub: String) -> bool {
     glob_match(&pattern, &key_pub.to_string())
-}
-
-fn try_generate(pattern: String) -> Option<(String, String)> {
-    let key_priv = age::x25519::Identity::generate();
-    let key_pub = key_priv.to_public();
-
-    glob_match(&pattern, &key_pub.to_string()).then_some((
-        key_priv.to_string().expose_secret().to_string(),
-        key_pub.to_string(),
-    ))
 }
 
 fn main() {
@@ -81,7 +74,7 @@ fn main() {
     };
 
     let (key_priv, key_pub) = pairs.first().unwrap();
-    let timestamp: DateTime<Local> = std::time::SystemTime::now().into();
-    let timestamp = timestamp.to_rfc3339_opts(SecondsFormat::Secs, false);
-    println!("# created: {}\n# public key: {key_pub}\n{key_priv}", timestamp);
+    let timestamp = Into::<DateTime<Local>>::into(std::time::SystemTime::now())
+        .to_rfc3339_opts(SecondsFormat::Secs, false);
+    println!("# created: {timestamp}\n# public key: {key_pub}\n{key_priv}");
 }
