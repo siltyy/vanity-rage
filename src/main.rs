@@ -3,6 +3,19 @@ use glob_match::glob_match;
 use rayon::prelude::*;
 use std::{env, process};
 
+fn genpair() -> (String, String) {
+    let key_priv = age::x25519::Identity::generate();
+    let key_pub = key_priv.to_public();
+    (
+        key_priv.to_string().expose_secret().to_string(),
+        key_pub.to_string(),
+    )
+}
+
+fn try_pattern(pattern: String, key_pub: String) -> bool {
+    glob_match(&pattern, &key_pub.to_string())
+}
+
 fn try_generate(pattern: String) -> Option<(String, String)> {
     let key_priv = age::x25519::Identity::generate();
     let key_pub = key_priv.to_public();
@@ -34,11 +47,28 @@ fn main() {
         format!("age1{}", args.last().unwrap())
     };
 
-    let keypair: (String, String) = loop {
+    let pairs = loop {
+        let pairs: Vec<(String, String)> = (0..=128)
+            .into_par_iter()
+            .filter_map(|_| {
+                let keypair = genpair();
+                if try_pattern(pattern.clone(), keypair.1.clone()) {
+                    Some(keypair)
+                } else {
+                    None
+                }
+            })
+            .collect();
+        if pairs.len() > 0 {
+            break pairs;
+        }
+    };
+
+    /*let keypair: (String, String) = loop {
         if let Some(x) = try_generate(pattern.clone()) {
             break x;
         };
-    };
+    };*/
 
-    println!("{:#?}", keypair);
+    println!("{:#?}", pairs);
 }
