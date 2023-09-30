@@ -20,7 +20,6 @@ fn try_generate(pattern: String) -> Option<(String, String)> {
     let key_priv = age::x25519::Identity::generate();
     let key_pub = key_priv.to_public();
 
-    // TODO: ignore case
     glob_match(&pattern, &key_pub.to_string()).then_some((
         key_priv.to_string().expose_secret().to_string(),
         key_pub.to_string(),
@@ -44,7 +43,7 @@ fn main() {
         ));
         process::exit(64);
     } else {
-        format!("age1{}", args.last().unwrap())
+        format!("age1{}", args.last().unwrap().to_ascii_lowercase())
     };
 
     let pairs = loop {
@@ -63,12 +62,6 @@ fn main() {
             break pairs;
         }
     };
-
-    /*let keypair: (String, String) = loop {
-        if let Some(x) = try_generate(pattern.clone()) {
-            break x;
-        };
-    };*/
 
     println!("{:#?}", pairs);
 }
