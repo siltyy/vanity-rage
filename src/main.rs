@@ -20,8 +20,7 @@ use chrono::{
     SecondsFormat,
 };
 use glob_match::glob_match;
-use rayon::prelude::*;
-use std::{env, process};
+use std::{env, process, thread::{self, JoinHandle}, sync::{self, mpsc, Arc, Mutex}};
 
 fn genpair() -> (String, String) {
     let key_priv = age::x25519::Identity::generate();
@@ -56,24 +55,27 @@ fn main() {
         format!("age1{}", args.last().unwrap().to_ascii_lowercase())
     };
 
-    let pairs = loop {
-        let pairs: Vec<(String, String)> = (0..=4096)
-            .into_par_iter()
-            .filter_map(|_| {
+
+    let (tx, rx) = mpsc::sync_channel(1);
+    let mut threads: Vec<JoinHandle<()>> = Vec::new();
+    for _ in 0..thread::available_parallelism().unwrap().get() {
+        let tx = tx.clone();
+        let pattern = pattern.clone();
+        threads.push(thread::spawn(move || {
+            loop {
                 let keypair = genpair();
                 if try_pattern(pattern.clone(), keypair.1.clone()) {
-                    Some(keypair)
-                } else {
-                    None
+                    tx.send(keypair).expect("no sendy :c");
+                    break;
                 }
-            })
-            .collect();
-        if pairs.len() > 0 {
-            break pairs;
-        }
-    };
+            };
+        }))
+    }
 
-    let (key_priv, key_pub) = pairs.first().unwrap();
+    let keypair = rx.recv().expect("no receivey :c");
+
+    let (key_priv, key_pub) = keypair;
+
     let timestamp = Into::<DateTime<Local>>::into(std::time::SystemTime::now())
         .to_rfc3339_opts(SecondsFormat::Secs, false);
     println!("# created: {timestamp}\n# public key: {key_pub}\n{key_priv}");
